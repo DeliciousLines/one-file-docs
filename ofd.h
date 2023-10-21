@@ -54,7 +54,8 @@ extern "C" {
 
 #define ofd_cast(_v, _type) ((_type)(_v))
 #define ofd_array_count(_array) (sizeof(_array)/sizeof(_array[0]))
-#define ofd_min(_a, _b) (_a < _b? _a : _b)
+#define ofd_min(_a, _b) ((_a) < (_b)? (_a) : (_b))
+#define ofd_max(_a, _b) ((_a) > (_b)? (_a) : (_b))
 
 typedef unsigned char ofd_b8;
 typedef unsigned char ofd_u8;
@@ -228,7 +229,7 @@ typedef struct
 
 typedef struct
 {
-    int id; // @ Should we get rid of this?
+    int id;
     int hierarchy; // 0 is the highest hierarchy. 1-6 is for markdown headers, 0 means this is a markdown file.
     int name_count;
     int id_count;
