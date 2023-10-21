@@ -8,6 +8,7 @@ jobs:
       - uses: actions/checkout@v3
       - run: ./ofd "documentation/_ overview.md" -o test1.html
   build:
+    needs: prepare-test
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3

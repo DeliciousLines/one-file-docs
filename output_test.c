@@ -12,6 +12,10 @@
 #endif
 
 
+#define STB_SPRINTF_IMPLEMENTATION
+#include "stb_sprintf.h"
+
+#define ofd_sprintf stbsp_sprintf
 #define OFD_IMPLEMENTATION
 #include "ofd.h"
 
