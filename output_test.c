@@ -39,5 +39,7 @@ int main(int num_arguments, char** arguments)
         return -1;
     }
     
+    printf("Success! Both files match!");
+    
     return 0;
 }
