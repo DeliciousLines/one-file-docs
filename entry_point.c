@@ -379,7 +379,7 @@ int main(int num_arguments, char** arguments)
     
     if(num_arguments > 1)
     {
-        char* html_filepath     = "result.html";
+        char* html_filepath     = NULL;
         char* theme_filepath    = NULL;
         char* logo_path         = NULL;
         char* icon_path         = NULL;
@@ -401,13 +401,13 @@ int main(int num_arguments, char** arguments)
                 if(config_filepath)
                 {
                     printf("It looks like you already specified the configuration file to be '%s'.", config_filepath);
-                    return 0;
+                    return -1;
                 }
                 
                 if(arg_index == num_arguments - 1)
                 {
                     printf("It looks like you forgot to specify the configuration file filepath after the '%s' switch.\n", argument);
-                    return 0;
+                    return -1;
                 }
                 
                 config_filepath = arguments[arg_index + 1];
@@ -422,13 +422,13 @@ int main(int num_arguments, char** arguments)
                 if(directory_path)
                 {
                     printf("It looks like you already specified the directory to make documentation from to be '%s'.", directory_path);
-                    return 0;
+                    return -1;
                 }
                 
                 if(arg_index == num_arguments - 1)
                 {
                     printf("It looks like you forgot to specify a directory path after the '%s' switch.\n", argument);
-                    return 0;
+                    return -1;
                 }
                 
                 directory_path = arguments[arg_index + 1];
@@ -443,13 +443,13 @@ int main(int num_arguments, char** arguments)
                 if(icon_path)
                 {
                     printf("It looks like you already specified the icon path to be '%s'.", icon_path);
-                    return 0;
+                    return -1;
                 }
                 
                 if(arg_index == num_arguments - 1)
                 {
                     printf("It looks like you forgot to specify an icon path after the '%s' switch.\n", argument);
-                    return 0;
+                    return -1;
                 }
                 
                 icon_path = arguments[arg_index + 1];
@@ -464,13 +464,13 @@ int main(int num_arguments, char** arguments)
                 if(title)
                 {
                     printf("It looks like you already specified the title to be '%s'.", title);
-                    return 0;
+                    return -1;
                 }
                 
                 if(arg_index == num_arguments - 1)
                 {
                     printf("It looks like you forgot to specify a title after the '%s' switch.\n", argument);
-                    return 0;
+                    return -1;
                 }
                 
                 title = arguments[arg_index + 1];
@@ -485,13 +485,13 @@ int main(int num_arguments, char** arguments)
                 if(html_filepath)
                 {
                     printf("It looks like you already specified the result filepath to be '%s'.", html_filepath);
-                    return 0;
+                    return -1;
                 }
                 
                 if(arg_index == num_arguments - 1)
                 {
                     printf("It looks like you forgot to specify the result filepath after the '%s' switch.\n", argument);
-                    return 0;
+                    return -1;
                 }
                 
                 html_filepath = arguments[arg_index + 1];
@@ -506,13 +506,13 @@ int main(int num_arguments, char** arguments)
                 if(theme_filepath)
                 {
                     printf("It looks like you already specified the theme file to be '%s'.", theme_filepath);
-                    return 0;
+                    return -1;
                 }
                 
                 if(arg_index == num_arguments - 1)
                 {
                     printf("It looks like you forgot to specify a theme file after the '%s' switch.\n", argument);
-                    return 0;
+                    return -1;
                 }
                 
                 theme_filepath = arguments[arg_index + 1];
@@ -527,13 +527,13 @@ int main(int num_arguments, char** arguments)
                 if(logo_path)
                 {
                     printf("It looks like you already specified the logo path to be '%s'.", logo_path);
-                    return 0;
+                    return -1;
                 }
                 
                 if(arg_index == num_arguments - 1)
                 {
                     printf("It looks like you forgot to specify a logo path after the '%s' switch.\n", argument);
-                    return 0;
+                    return -1;
                 }
                 
                 logo_path = arguments[arg_index + 1];
@@ -545,7 +545,7 @@ int main(int num_arguments, char** arguments)
             else if(strcmp(argument, "-h") == 0 || strcmp(argument, "-help") == 0)
             { // Display a help message.
                 printf("%s", HELP_MESSAGE);
-                return 0;
+                return -1;
             }
             else
             {
@@ -565,7 +565,7 @@ int main(int num_arguments, char** arguments)
             if(md_files.count)
             {
                 printf("You specified a directory to make documentation from but you also specified markdown files.\nYou can specify either one but not both at the same time.");
-                return 0;
+                return -1;
             }
             
             Ofd_Array files = ofd_os_list_markdown_files(directory_path);
@@ -585,7 +585,7 @@ int main(int num_arguments, char** arguments)
                 if(config_filepath)
                 {
                     printf("You specified a configuration file but there is an implicit .ofd configuration file in the directory you want to make documentation from.\nEither delete this .ofd file or do not explicitly set a configuration file.");
-                    return 0;
+                    return -1;
                 }
                 
                 config_filepath = implicit_config_filepath;
@@ -610,7 +610,7 @@ int main(int num_arguments, char** arguments)
             if(!status)
             {
                 printf("Failed to parse configuration file '%s' with the following error:\n%s", config_filepath, error_message);
-                return 0;
+                return -1;
             }
             
             
@@ -682,11 +682,13 @@ int main(int num_arguments, char** arguments)
             // Parse the configuration file. END
         }
         
+        if(!html_filepath) html_filepath = "result.html";
+        
         
         if(!md_files.count)
         {
             printf("Did you forget to specify markdown files to make documentation from?\n");
-            return 0;
+            return -1;
         }
         
         ofd_b8 status = ofd_generate_documentation(ofd_cast(md_files.data, char**), md_files.count, html_filepath, theme_filepath, logo_path, icon_path, title);

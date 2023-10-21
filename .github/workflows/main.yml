@@ -15,7 +15,7 @@ jobs:
       - run: ./build_macos_clang.sh
       - run: ./ofd_macos "documentation/_ overview.md" -o test2.html
       - run: clang -O3 output_test.c -o tester
-      - run: tester test1.html test2.html
+      - run: ./tester test1.html test2.html
 
       - uses: actions/upload-artifact@v3
         with:
