@@ -1,0 +1,5 @@
+title  "One-File Docs"
+logo   "https://deliciouslines.com/images/ofd-logo.png"
+icon   "https://deliciouslines.com/images/ofd-icon.png"
+theme  "theme.txt"
+output "../documentation.html"
