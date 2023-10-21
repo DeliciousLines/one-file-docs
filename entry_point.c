@@ -25,8 +25,6 @@
 typedef uint16_t u16;
 typedef uint32_t u32;
 
-#define cast(_v, _type) ((_type)(_v))
-
 
 #ifdef OFD_OS_WINDOWS
 
@@ -83,17 +81,17 @@ void ofd_utf8_to_utf16(char* utf8_string, u16* result)
         }
         else if((input[0] & 0b11100000) == 0b11000000)
         {
-            codepoint = (cast(input[0] & 0b11111, u32) << 6) | (input[1] & 0b111111);
+            codepoint = (ofd_cast(input[0] & 0b11111, u32) << 6) | (input[1] & 0b111111);
             input += 2;
         }
         else if((input[0] & 0b11110000) == 0b11100000)
         {
-            codepoint = (cast(input[0] & 0b1111, u32) << 12) | (cast(input[1] & 0b111111, u32) << 6) | (input[2] & 0b111111);
+            codepoint = (ofd_cast(input[0] & 0b1111, u32) << 12) | (ofd_cast(input[1] & 0b111111, u32) << 6) | (input[2] & 0b111111);
             input += 3;
         }
         else
         {
-            codepoint = (cast(input[0] & 0b11111, u32) << 18) | (cast(input[1] & 0b111111, u32) << 12) | (cast(input[2] & 0b111111, u32) << 6) | (input[3] & 0b111111);
+            codepoint = (ofd_cast(input[0] & 0b11111, u32) << 18) | (ofd_cast(input[1] & 0b111111, u32) << 12) | (ofd_cast(input[2] & 0b111111, u32) << 6) | (input[3] & 0b111111);
             input += 4;
         }
         // Retrieve codepoint. END
@@ -152,7 +150,7 @@ int ofd_utf16_to_utf8(u16* input, char* output)
             
             if((leading_surrogate & 0b1111110000000000) == 0b1101100000000000 && (trailing_surrogate & 0b1111110000000000) == 0b1101110000000000)
             {
-                codepoint = (cast(leading_surrogate - 0xd800, u32) << 10) | (trailing_surrogate - 0xdc00);
+                codepoint = (ofd_cast(leading_surrogate - 0xd800, u32) << 10) | (trailing_surrogate - 0xdc00);
                 input += 2;
             }
             else input++;
@@ -216,7 +214,7 @@ void ofd_put_last_file_in_the_right_place(Ofd_Array* files)
     
     if(files->count == 1) return;
     
-    Ofd_File* file = cast(files->data, Ofd_File*) + files->count - 1;
+    Ofd_File* file = ofd_cast(files->data, Ofd_File*) + files->count - 1;
     
     int higher_bound  = files->count - 1;
     int lower_bound   = 0;
@@ -229,7 +227,7 @@ void ofd_put_last_file_in_the_right_place(Ofd_Array* files)
         ////////////////////////////////////////////////////////////////////////////////////////
         
         current_index = lower_bound + (higher_bound - lower_bound) / 2;
-        Ofd_File* current_file = cast(files->data, Ofd_File*) + current_index;
+        Ofd_File* current_file = ofd_cast(files->data, Ofd_File*) + current_index;
         
         
         ofd_b8 we_should_go_below = file->filepath_count < current_file->filepath_count;
@@ -254,7 +252,7 @@ void ofd_put_last_file_in_the_right_place(Ofd_Array* files)
     if(current_index < files->count - 1)
     {
         Ofd_File tmp = *file;
-        Ofd_File* where_to_move = cast(files->data, Ofd_File*) + current_index;
+        Ofd_File* where_to_move = ofd_cast(files->data, Ofd_File*) + current_index;
         int num_files_above = files->count - current_index - 1;
         
         memmove(where_to_move + 1, where_to_move, num_files_above * sizeof(Ofd_File));
@@ -571,7 +569,7 @@ int main(int num_arguments, char** arguments)
             Ofd_Array files = ofd_os_list_markdown_files(directory_path);
             for(int i = 0; i < files.count; i++)
             {
-                Ofd_File* file = cast(files.data, Ofd_File*) + i;
+                Ofd_File* file = ofd_cast(files.data, Ofd_File*) + i;
                 char** filepath = ofd_array_add_fast(&md_files);
                 *filepath = file->filepath_memory;
             }
@@ -624,7 +622,7 @@ int main(int num_arguments, char** arguments)
             
             char tmp_buffer[2048];
             
-            if(config.output_filepath.count)
+            if(config.output_filepath.count && !html_filepath)
             {
                 if(directory_path_count) 
                 {
@@ -638,7 +636,7 @@ int main(int num_arguments, char** arguments)
                 html_filepath = malloc(size);
                 memcpy(html_filepath, tmp_buffer, size);
             }
-            if(config.theme_filepath.count)
+            if(config.theme_filepath.count && !theme_filepath)
             {
                 if(directory_path_count)
                 {
@@ -652,7 +650,7 @@ int main(int num_arguments, char** arguments)
                 theme_filepath = malloc(size);
                 memcpy(theme_filepath, tmp_buffer, size);
             }
-            if(config.logo_path.count)
+            if(config.logo_path.count && !logo_path)
             {
                 ofd_to_c_string(config.logo_path, tmp_buffer);
                 
@@ -660,7 +658,7 @@ int main(int num_arguments, char** arguments)
                 logo_path = malloc(size);
                 memcpy(logo_path, tmp_buffer, size);
             }
-            if(config.icon_path.count)
+            if(config.icon_path.count && !icon_path)
             {
                 ofd_to_c_string(config.icon_path, tmp_buffer);
                 
@@ -668,7 +666,7 @@ int main(int num_arguments, char** arguments)
                 icon_path = malloc(size);
                 memcpy(icon_path, tmp_buffer, size);
             }
-            if(config.title.count)
+            if(config.title.count && !title)
             {
                 ofd_to_c_string(config.title, tmp_buffer);
                 

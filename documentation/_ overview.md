@@ -1,3 +1,7 @@
+# Download
+
+You can download the latest release from [Github](https://github.com/deliciouslines/one-file-docs/releases/latest).
+
 # Goal And Philosophy
 
 One-File Docs takes one or several markdown files and generates a single HTML file.
@@ -119,6 +123,11 @@ If you like to work with [project configuration files](#Project-configuration-fi
 > **NOTE**
 > All paths within the `.ofd` project file are relative to the folder (except for the `logo` and `icon` fields).
 > For instance if you want to use `folder-path/theme.txt` as a theme then you can simply specify `theme "theme.txt"` in the `.ofd` file.
+
+## Overriding `.ofd`
+
+You can easily override values from the `.ofd` file by providing them on the command line.
+For example if you want to output documentation to a different file you can run `ofd -d documentation -o alternative_path.html`.
 
 ## File order
 
@@ -273,7 +282,7 @@ On Windows make sure to link against `Kernel32`.
 
 # Using One-File Docs as a library
 
-You can use One-File Docs as a C/C++ library by including `ofd.h` in your project. All you have to do is make sure to define `OFD_IMPLEMENTATION` *once* in your codebase before including `ofd.h`.
+You can use One-File Docs as a C/C++ library by including `ofd.h` in your project. All you have to do is to make sure you define `OFD_IMPLEMENTATION` *once* in your codebase before including `ofd.h`.
 For additional information check `ofd.h`.
 Check `entry_point.c` if you want to see it in action.
 

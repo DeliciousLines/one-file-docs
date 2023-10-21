@@ -22,10 +22,9 @@ extern "C" {
     
     The first one handles file I/O whereas the second one lets you handle that yourself.
     If you do not need file I/O you can #define OFD_NO_FILE_IO before including this file.
-    If you use the second call make sure to free the resulting HTML data using ofd_free_array() when you are done with it.
     
-    This library uses several utility routines from the C runtime. If you would like to no depend on the C runtime you can #define them yourself.
-    See the #defines below to see what the library uses from the C runtime. Note that if you do #define OFD_NO_FILE_IO the library still relies on
+    This library uses several utility routines from the C runtime. If you would like to cut dependency on the C runtime you can #define them yourself.
+    See the #defines below to see what the library uses from the C runtime. Note that if you do not #define OFD_NO_FILE_IO the library still relies on
     <stdio.h> to read and write files.
     
     
@@ -78,10 +77,14 @@ typedef float         ofd_f32;
 #endif
 
 
-#ifndef ofd_allocate
+#ifndef ofd_allocate // Make sure you also #define ofd_free() if you use your own allocator.
 #include <stdlib.h>
 #define ofd_allocate(_size) malloc(_size)
 #define ofd_free(_memory)   free(_memory)
+#else
+    #if !defined(ofd_free)
+    #error You must also define ofd_free() when you define ofd_allocate().
+    #endif
 #endif
 
 #ifndef ofd_strlen
@@ -3513,14 +3516,6 @@ ofd_static void ofd_parse_markdown(char* c, char* limit, Ofd_Array* result_html,
                     // Handle an image. START
                     OFD_SPILL_TEXT();
                     
-                    /////////////////////////////////////////////////////////////////////////////////
-                    // NOTE: @ for now we do not handle reference-style images (e.g. ![alt text][1]).
-                    /////////////////////////////////////////////////////////////////////////////////
-                    
-                    //////////////////////////////////////////////////////////////////////////////////////////////////////
-                    // NOTE: @@@ we should just have one routine to parse this since this is identical to the link syntax.
-                    //////////////////////////////////////////////////////////////////////////////////////////////////////
-                    
                     Ofd_String image_name, image_address, image_title;
                     Ofd_Array additional_css;
                     
@@ -4067,6 +4062,7 @@ ofd_static void ofd_generate_documentation_from_memory(Ofd_String* markdown_file
         "<html>"
         "<head>"
             "<meta charset='utf-8'>"
+            "<meta name='viewport' content='width=device-width, initial-scale=1'>"
     ));
     
     if(title)
@@ -4076,7 +4072,18 @@ ofd_static void ofd_generate_documentation_from_memory(Ofd_String* markdown_file
     }
     if(icon_path)
     {
-        ofd_sprintf(buffer, "<link rel='icon' href='%s' />", icon_path);
+        ofd_sprintf(buffer,
+            "<link rel='icon' href='%s' />"
+            "<link rel='apple-touch-icon' href='%s' />"
+            
+            "<meta name='twitter:card' content='summary'>"
+            "<meta property='og:type' content='website'>"
+            "<meta property='og:title' content='%s'>"
+            "<meta property='og:image' content='%s'>"
+            ,
+            icon_path, icon_path,
+            title, icon_path
+        );
         ofd_array_add_string(&html, Ofd_String_(buffer));
     }
     
@@ -4139,6 +4146,10 @@ ofd_static void ofd_generate_documentation_from_memory(Ofd_String* markdown_file
             "height: %gvh;"
             "overflow-wrap: break-word;"
             "opacity: 0.8;"
+        "}"
+        
+        "#ofd-repo-link:hover {"
+            "opacity: 1;"
         "}"
         
         "#ofd-sidebar-separator {"
@@ -4954,7 +4965,7 @@ ofd_static void ofd_generate_documentation_from_memory(Ofd_String* markdown_file
     ofd_f32 background_brightness = theme.background_colour.r * 0.2126f + theme.background_colour.g * 0.7152f + theme.background_colour.b * 0.0722f;
     char* logo_source = background_brightness < 0.5f? "https://deliciouslines.com/images/ofd-logo-white.png" : "https://deliciouslines.com/images/ofd-logo-black.png";
     ofd_sprintf(buffer,
-        "<a href='' target='_blank' style='display: inline-block; margin: 0; padding: 0; width: 100%%; height: 100%%;'>"
+        "<a href='https://github.com/deliciouslines/one-file-docs' target='_blank' style='display: inline-block; margin: 0; padding: 0; width: 100%%; height: 100%%;'>"
             "<img style='display: block; max-width: 100%%; max-height: 100%%; margin: auto;' src='%s' />"
         "</a>"
         ,
