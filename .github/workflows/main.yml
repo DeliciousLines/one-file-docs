@@ -17,19 +17,15 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
-      
       - name: build
       - run: ./build_macos_clang.sh
       - run: ./ofd_macos "documentation/_ overview.md" -o test2.html
-      
       - name: test
       - uses: actions/download-artifact@v3
         with:
           name: test1.html
-        
       - run: clang -O3 output_test.c -o tester
       - run: ./tester test1.html test2.html
-      
       - name: store-binaries
       - uses: actions/upload-artifact@v3
         with:
