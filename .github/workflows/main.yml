@@ -11,6 +11,7 @@ jobs:
         with:
           name: test1.html
           path: test1.html
+          retention-days: 1
   
   build:
     needs: prepare-test
@@ -32,3 +33,4 @@ jobs:
         with:
           name: ofd_macos
           path: ofd_macos
+          retention-days: 1
