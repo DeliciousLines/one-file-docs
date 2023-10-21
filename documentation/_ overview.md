@@ -266,7 +266,7 @@ Todo-lists will probably be added in the future. For now the following has no ef
 
 # How to build
 
-We currently provide binaries for Windows (x64), Linux (x64) and macOS (x64, Arm-v8). We also provide shell scripts for building the program with major compilers.
+We currently provide binaries for Windows (x64), Linux (x64) and macOS (x64, ARM). We also provide shell scripts for building the program with major compilers.
 If you want to build it yourself without using one of the provided options, all you have to do is give `entry_point.c` to your compiler of choice.
 Make sure you also link against the C runtime.
 On Windows make sure to link against `Kernel32`.

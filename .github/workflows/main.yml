@@ -21,7 +21,7 @@ jobs:
       
       - run: ./build_macos_clang.sh
       
-      - run: ./ofd_macos "documentation/_ overview.md" -o test2.html
+      - run: ./ofd "documentation/_ overview.md" -o test2.html
       - uses: actions/download-artifact@v3
         with:
           name: test1.html
@@ -31,6 +31,6 @@ jobs:
       
       - uses: actions/upload-artifact@v3
         with:
-          name: ofd_macos
-          path: ofd_macos
+          name: ofd
+          path: ofd
           retention-days: 1
