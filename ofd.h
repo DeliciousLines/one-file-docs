@@ -3572,7 +3572,7 @@ ofd_static void ofd_parse_markdown(char* c, char* limit, Ofd_Array* result_html,
                 // Handle a table. START
                 OFD_SPILL_TEXT();
                 
-                ofd_array_add_string(result_html, Ofd_String_("<table class='ofd-table'>"));
+                ofd_array_add_string(result_html, Ofd_String_("<div class='ofd-table-wrapper'><table class='ofd-table'>"));
                 
                 while(c < limit)
                 {
@@ -3640,7 +3640,7 @@ ofd_static void ofd_parse_markdown(char* c, char* limit, Ofd_Array* result_html,
                     c = tmp_c;
                 }
                 
-                ofd_array_add_string(result_html, Ofd_String_("</table>"));
+                ofd_array_add_string(result_html, Ofd_String_("</table></div>"));
                 // Handle a table. END
             } break;
             
@@ -4681,6 +4681,11 @@ ofd_static void ofd_generate_documentation_from_memory(Ofd_String* markdown_file
             "display: inline;"
         "}"
         
+        
+        ".ofd-table-wrapper {"
+            "max-width: 100%;"
+            "overflow-x: auto;"
+        "}"
         
         ".ofd-table {"
             "margin: 0 auto;"
