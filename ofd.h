@@ -3207,14 +3207,20 @@ ofd_static void ofd_parse_markdown(char* c, char* limit, Ofd_Array* result_html,
                 tmp_c++;
                 
                 // Handle an unordered list. START
+                if(basic_text.count && basic_text.data < tmp_c)
+                {
+                    basic_text.count = tmp_c - basic_text.data;
+                    OFD_SPILL_TEXT();
+                }
+                else basic_text.count = 0;
+                
+                
                 Ofd_Array whitespaces;
                 ofd_array_init(&whitespaces, sizeof(Ofd_String));
                 
                 Ofd_String* current_whitespace = ofd_array_add_fast(&whitespaces);
                 current_whitespace->data  = tmp_c;
                 current_whitespace->count = c - tmp_c;
-                
-                OFD_SPILL_TEXT();
                 
                 char list_indicator = *c;
                 
@@ -3250,14 +3256,17 @@ ofd_static void ofd_parse_markdown(char* c, char* limit, Ofd_Array* result_html,
                     if(c < limit)
                     {
                         char* line_end;
-                        tmp_c = ofd_get_next_character_like_in_line(c, limit, list_indicator, &line_end);
-                        if(!tmp_c) break; // The list seems to stop here.
+                        char* delimiter = ofd_get_next_character_like_in_line(c, limit, list_indicator, &line_end);
+                        if(!delimiter) break; // The list seems to stop here.
                         
-                        Ofd_String leading_whitespace = {c, tmp_c - c};
+                        char* whitespace_end = ofd_skip_whitespace(c, delimiter);
+                        if(whitespace_end != delimiter) break; // The list seems to stop here.
+                        
+                        Ofd_String leading_whitespace = {c, delimiter - c};
                         
                         if(leading_whitespace.count == current_whitespace->count)
                         {
-                            c = tmp_c;
+                            c = delimiter;
                             continue; // Parse the next list item.
                         }
                         if(leading_whitespace.count > current_whitespace->count)
@@ -3267,7 +3276,7 @@ ofd_static void ofd_parse_markdown(char* c, char* limit, Ofd_Array* result_html,
                             current_whitespace = ofd_array_add_fast(&whitespaces);
                             *current_whitespace = leading_whitespace;
                             
-                            c = tmp_c;
+                            c = delimiter;
                             continue; // Parse the next list item.
                         }
                         if(leading_whitespace.count < current_whitespace->count)
@@ -3279,7 +3288,7 @@ ofd_static void ofd_parse_markdown(char* c, char* limit, Ofd_Array* result_html,
                                 whitespaces.count--;
                                 current_whitespace = ofd_cast(whitespaces.data, Ofd_String*) + whitespaces.count - 1;
                                 
-                                c = tmp_c;
+                                c = delimiter;
                                 continue; // Parse the next list item.
                             }
                             else break; // This is the end of the list.
@@ -3290,6 +3299,137 @@ ofd_static void ofd_parse_markdown(char* c, char* limit, Ofd_Array* result_html,
                 for(int i = 0; i < whitespaces.count; i++) ofd_array_add_string(result_html, Ofd_String_("</ul>"));
                 ofd_free_array(&whitespaces);
                 // Handle an unordered list. END
+            } break;
+            
+            
+            case '.':
+            {
+                char* tmp_c = c - 1;
+                while(tmp_c >= lower_limit)
+                {
+                    if(*tmp_c < '0' || *tmp_c > '9') break;
+                    tmp_c--;
+                }
+                
+                tmp_c++;
+                if(tmp_c == c) goto do_the_default_thing;
+                
+                
+                tmp_c--;
+                while(tmp_c >= lower_limit)
+                {
+                    char character = *tmp_c;
+                    if(character == '\n' || character == '\r') break;
+                    if(character != ' ' && character != '\t') goto do_the_default_thing;
+                    tmp_c--;
+                }
+                
+                tmp_c++;
+                
+                // Handle an ordered list. START
+                if(basic_text.count && basic_text.data < tmp_c)
+                {
+                    basic_text.count = tmp_c - basic_text.data;
+                    OFD_SPILL_TEXT();
+                }
+                else basic_text.count = 0;
+                
+                Ofd_Array whitespaces;
+                ofd_array_init(&whitespaces, sizeof(Ofd_String));
+                
+                Ofd_String* current_whitespace = ofd_array_add_fast(&whitespaces);
+                current_whitespace->data  = tmp_c;
+                current_whitespace->count = c - tmp_c;
+                
+                ofd_array_add_string(result_html, Ofd_String_("<ol>"));
+                
+                while(c < limit)
+                {
+                    c = ofd_skip_whitespace(c + 1, limit); // Skip '. '.
+                    
+                    Ofd_String text = {c};
+                    while(c < limit)
+                    {
+                        if(*c == '\n' || *c == '\r') break;
+                        c++;
+                    }
+                    
+                    text.count = c - text.data;
+                    
+                    ofd_array_add_string(result_html, Ofd_String_("<li>"));
+                    ofd_parse_markdown(text.data, text.data + text.count, result_html, result_sections, link_references, next_section_id, log_data);
+                    ofd_array_add_string(result_html, Ofd_String_("</li>"));
+                    
+                    if(c == limit) break;
+                    
+                    if(*c == '\n')
+                    {
+                        c++;
+                        if(c < limit && *c == '\r') c++;
+                    }
+                    else if(*c == '\r') c++;
+                    
+                    if(c < limit)
+                    {
+                        char* line_end;
+                        char* delimiter = ofd_get_next_character_like_in_line(c, limit, '.', &line_end);
+                        if(!delimiter) break;
+                        
+                        tmp_c = delimiter - 1;
+                        while(tmp_c >= lower_limit)
+                        {
+                            char character = *tmp_c;
+                            if(character < '0' || character > '9') break;
+                            tmp_c--;
+                        }
+                        
+                        while(tmp_c >= lower_limit)
+                        {
+                            char character = *tmp_c;
+                            if(character != ' ' && character != '\t') break;
+                            tmp_c--;
+                        }
+                        
+                        tmp_c++;
+                        if(tmp_c != c) break; // It looks like the list stops here.
+                        
+                        Ofd_String leading_whitespace = {c, delimiter - c};
+                        if(leading_whitespace.count == current_whitespace->count)
+                        {
+                            c = delimiter;
+                            continue; // Parse the next list item.
+                        }
+                        if(leading_whitespace.count > current_whitespace->count)
+                        { // This is a nested list.
+                            ofd_array_add_string(result_html, Ofd_String_("<ol>"));
+                            
+                            current_whitespace = ofd_array_add_fast(&whitespaces);
+                            *current_whitespace = leading_whitespace;
+                            
+                            c = delimiter;
+                            continue; // Parse the next list item.
+                        }
+                        if(leading_whitespace.count < current_whitespace->count)
+                        { // This could be the end of a nested list or the end of the whole list.
+                            if(whitespaces.count > 1)
+                            { // This is the end of a nested list.
+                                ofd_array_add_string(result_html, Ofd_String_("</ol>"));
+                                
+                                whitespaces.count--;
+                                current_whitespace = ofd_cast(whitespaces.data, Ofd_String*) + whitespaces.count - 1;
+                                
+                                c = delimiter;
+                                continue; // Parse next list item.
+                            }
+                            
+                            break; // This is the end of the whole list.
+                        }
+                    }
+                }
+                
+                for(int i = 0; i < whitespaces.count; i++) ofd_array_add_string(result_html, Ofd_String_("</ol>"));
+                ofd_free_array(&whitespaces);
+                // Handle an ordered list. END
             } break;
             
             

@@ -250,9 +250,6 @@ This feature is very unlikely to be added in the future.
 ### Nested notes
 If enough people show interest in this it will be added in the future but right now this is not supported and there are no plans to support it.
 
-### Ordered list
-You can still use the notation but the result is not styled in any specific way. This will be added in the future.
-
 ### Todo-lists
 Todo-lists will probably be added in the future. For now the following has no effect:
 
