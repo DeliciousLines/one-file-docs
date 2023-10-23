@@ -148,7 +148,7 @@ ofd_static Ofd_String ofd_get_last_item_from_filepath(Ofd_String filepath);
 
 ofd_static Ofd_String ofd_strip_file_extension(Ofd_String filepath);
 
-ofd_static Ofd_String ofd_cleanup_section_name(Ofd_String name, char* result_memory);
+ofd_static Ofd_String ofd_cleanup_section_name(Ofd_String name, char* result_memory, ofd_b8 also_remove_leading_number);
 
 ofd_static Ofd_String ofd_make_section_id(Ofd_String section_name, char* result_memory);
 
@@ -429,7 +429,7 @@ ofd_static Ofd_String ofd_strip_file_extension(Ofd_String filepath)
     return filepath;
 }
 
-ofd_static Ofd_String ofd_cleanup_section_name(Ofd_String name, char* result_memory)
+ofd_static Ofd_String ofd_cleanup_section_name(Ofd_String name, char* result_memory, ofd_b8 also_remove_leading_number)
 {
     char* c     = name.data;
     char* limit = name.data + name.count;
@@ -438,7 +438,17 @@ ofd_static Ofd_String ofd_cleanup_section_name(Ofd_String name, char* result_mem
     
     while(c < limit)
     { // Remove leading whitespace.
-        if(*c != ' ' && *c != '\t' && *c != '_') break;
+        char character = *c;
+        
+        if(character != ' ' && character != '\t' && character != '_')
+        {
+            if(also_remove_leading_number)
+            {
+                if(character < '0' || character > '9') break;
+            }
+            else break;
+        }
+        
         c++;
     }
     
@@ -2708,7 +2718,7 @@ ofd_static void ofd_parse_markdown(char* c, char* limit, Ofd_Array* result_html,
                     section->id         = *next_section_id;
                     section->hierarchy  = header_hierarchy;
                     
-                    Ofd_String section_name = ofd_cleanup_section_name(text, section->name_memory);
+                    Ofd_String section_name = ofd_cleanup_section_name(text, section->name_memory, ofd_false);
                     section->name_count = section_name.count;
                     
                     ofd_b8 this_is_not_the_root_header = header_hierarchy > 1 && result_sections->count > 1;
@@ -4801,7 +4811,7 @@ ofd_static void ofd_generate_documentation_from_memory(Ofd_String* markdown_file
         section->id         = next_section_id;
         section->hierarchy  = 0;
         
-        filename = ofd_cleanup_section_name(filename, section->name_memory);
+        filename = ofd_cleanup_section_name(filename, section->name_memory, ofd_true);
         section->name_count = filename.count;
         
         Ofd_String section_id = ofd_make_section_id(filename, section->id_memory);

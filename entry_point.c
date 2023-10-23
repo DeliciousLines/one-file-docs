@@ -201,6 +201,7 @@ int ofd_utf16_to_utf8(u16* input, char* output)
 
 typedef struct
 {
+    int id;
     int filepath_count;
     char filepath_memory[2048]; // This must always be usable as a C string.
 } Ofd_File;
@@ -230,17 +231,7 @@ void ofd_put_last_file_in_the_right_place(Ofd_Array* files)
         Ofd_File* current_file = ofd_cast(files->data, Ofd_File*) + current_index;
         
         
-        ofd_b8 we_should_go_below = file->filepath_count < current_file->filepath_count;
-        
-        int size_to_check = ofd_min(current_file->filepath_count, file->filepath_count);
-        for(int i = 0; i < size_to_check; i++)
-        {
-            if(current_file->filepath_memory[i] == file->filepath_memory[i]) continue;
-            
-            we_should_go_below = current_file->filepath_memory[i] > file->filepath_memory[i];
-            break;
-        }
-        
+        ofd_b8 we_should_go_below = file->id < current_file->id;
         
         if(we_should_go_below) higher_bound = current_index;
         else                   lower_bound  = current_index + 1;
@@ -258,6 +249,76 @@ void ofd_put_last_file_in_the_right_place(Ofd_Array* files)
         memmove(where_to_move + 1, where_to_move, num_files_above * sizeof(Ofd_File));
         memcpy(where_to_move, &tmp, sizeof(Ofd_File));
     }
+}
+
+void ofd_add_markdown_file(Ofd_Array* files, char* directory_path, char* c_filename)
+{
+    Ofd_String filename = Ofd_String_(c_filename);
+    int file_id = 0;
+    
+    { // Get the file ID.
+        char* c     = filename.data;
+        char* limit = filename.data + filename.count;
+        
+        Ofd_String id = {c};
+        while(c < limit)
+        {
+            if(*c < '0' || *c > '9') break;
+            c++;
+        }
+        
+        id.count = c - id.data;
+        
+        char id_c_string[8];
+        ofd_to_c_string(id, id_c_string);
+        
+        file_id = atoi(id_c_string);
+    }
+    
+    
+    Ofd_File* file = ofd_array_add_fast(files);
+    
+    stbsp_sprintf(file->filepath_memory, "%s/%s", directory_path, c_filename);
+    file->filepath_count = strlen(file->filepath_memory);
+    file->id = file_id;
+    
+    
+    // Put the file in the right place. START
+    if(files->count == 1) return;
+    
+    int higher_bound  = files->count - 1;
+    int lower_bound   = 0;
+    int current_index = 0;
+    
+    while(1)
+    {
+        ////////////////////////////////////////////////////////////////////////////////////////
+        // NOTE: we just binary search the array to find the best place to put the last file in.
+        ////////////////////////////////////////////////////////////////////////////////////////
+        
+        current_index = lower_bound + (higher_bound - lower_bound) / 2;
+        Ofd_File* current_file = ofd_cast(files->data, Ofd_File*) + current_index;
+        
+        
+        ofd_b8 we_should_go_below = file->id < current_file->id;
+        
+        if(we_should_go_below) higher_bound = current_index;
+        else                   lower_bound  = current_index + 1;
+        
+        if(lower_bound >= higher_bound) break;
+    }
+    
+    current_index = higher_bound;
+    if(current_index < files->count - 1)
+    {
+        Ofd_File tmp = *file;
+        Ofd_File* where_to_move = ofd_cast(files->data, Ofd_File*) + current_index;
+        int num_files_above = files->count - current_index - 1;
+        
+        memmove(where_to_move + 1, where_to_move, num_files_above * sizeof(Ofd_File));
+        memcpy(where_to_move, &tmp, sizeof(Ofd_File));
+    }
+    // Put the file in the right place. END
 }
 
 Ofd_Array ofd_os_list_markdown_files(char* directory_path)
@@ -282,14 +343,16 @@ Ofd_Array ofd_os_list_markdown_files(char* directory_path)
     while(1)
     {
         char utf8_name[2048];
-        
-        Ofd_File* file = ofd_array_add_fast(&files);
         ofd_utf16_to_utf8(info.cFileName, utf8_name);
+        
+        /*Ofd_File* file = ofd_array_add_fast(&files);
         
         stbsp_sprintf(file->filepath_memory, "%s/%s", directory_path, utf8_name);
         file->filepath_count = strlen(file->filepath_memory);
         
-        ofd_put_last_file_in_the_right_place(&files);
+        ofd_put_last_file_in_the_right_place(&files);*/
+        
+        ofd_add_markdown_file(&files, directory_path, utf8_name);
         
         BOOL status = FindNextFileW(search_handle, &info);
         if(!status) break;

@@ -132,15 +132,7 @@ For example if you want to output documentation to a different file you can run 
 ## File order
 
 When you specify markdown files on the command-line they are added in order to the HTML file. Since here we are loading them from a folder, the order would depend on the OS.
-To mitigate this and introduce consistency all `.md` files are sorted by name in ascending order. This lets you name them accordingly so that they appear in the correct order.
-One trick you can use is to prepend '\_' characters to the file name. Since '\_' characters are replaced by spaces and all leading spaces are removed, this will not have an impact on the way the file name looks like in the generated documentation. This will however have an impact on file order.
-For example you could have the following files:
-
-``
-_ file1.md
-__ file2.md
-___ file3.md
-``
+To mitigate this, simply prepend a number to the file name, e.g. `2 changelog.md`. One-File Docs will then sort files in ascending order according to this number. This number will *not* appear in the final documentation.
 
 # Markdown
 

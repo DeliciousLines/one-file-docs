@@ -53,14 +53,8 @@ If you like to work with <a class='ofd-external-link' href='#Project-configurati
 For example if you want to output documentation to a different file you can run <div class='ofd-code-block ofd-code-block-1'>ofd -d documentation -o alternative_path.html</div>.
 
 <div class='ofd-header ofd-header-2' id='Building-documentation-from-a-folder-File-order'>File order</div>When you specify markdown files on the command-line they are added in order to the HTML file. Since here we are loading them from a folder, the order would depend on the OS.
-To mitigate this and introduce consistency all <div class='ofd-code-block ofd-code-block-1'>.md</div> files are sorted by name in ascending order. This lets you name them accordingly so that they appear in the correct order.
-One trick you can use is to prepend '_' characters to the file name. Since '_' characters are replaced by spaces and all leading spaces are removed, this will not have an impact on the way the file name looks like in the generated documentation. This will however have an impact on file order.
-For example you could have the following files:
+To mitigate this, simply prepend a number to the file name, e.g. <div class='ofd-code-block ofd-code-block-1'>2 changelog.md</div>. One-File Docs will then sort files in ascending order according to this number. This number will <div class='ofd-emphasis-1'>not</div> appear in the final documentation.
 
-<div class='ofd-code-block ofd-code-block-0'>_ file1.md
-__ file2.md
-___ file3.md
-</div>
 <div class='ofd-header ofd-header-1' id='Markdown'>Markdown</div>One-File Docs supports most Markdown features and has a few of its own. Some features are currently not available but will likely be added in the future.
 
 <div class='ofd-header ofd-header-2' id='Markdown-Supported-features'>Supported features</div>The following only lists notable features.
@@ -149,5 +143,6 @@ The above copyright notice and this permission notice shall be included in all c
 <div class='ofd-emphasis-2'>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</div>
 
 <div class='ofd-header ofd-header-1' id='Bug-reports-and-feature-requests'>Bug reports and feature requests</div>If you want to report a bug or request a feature head to the <a class='ofd-external-link' target='_blank' href='https://github.com/deliciouslines/one-file-docs'>Github repository</a> and open an issue.<br/><br/><div class='ofd-horizontal-rule'></div><br/><div class='ofd-anchor' id='changelog'></div><div class='ofd-header ofd-header-1' id='v0.1.1'>v0.1.1</div><div class='ofd-list-item'>Tables are now horizontally scrollable when they do not fit on the page.
+</div><div class='ofd-list-item'>BREAKING CHANGE: to specify file order when building from a directory just prepend the file name with a number.
 </div>
 <div class='ofd-header ofd-header-1' id='v0.1.0'>v0.1.0</div><div class='ofd-emphasis-2'>First release.</div><div style='display: block; height: 1vh;'></div></div></html></body>
