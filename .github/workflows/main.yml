@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: ./binaries/Linux/ofd "documentation/_ overview.md" -o test1.html
+      - run: ./binaries/Linux/ofd "documentation/1 overview.md" -o test1.html
       - uses: actions/upload-artifact@v3
         with:
           name: test1.html
@@ -21,7 +21,7 @@ jobs:
       
       - run: ./build_macos_clang.sh
       
-      - run: ./ofd "documentation/_ overview.md" -o test2.html
+      - run: ./ofd "documentation/1 overview.md" -o test2.html
       - uses: actions/download-artifact@v3
         with:
           name: test1.html
