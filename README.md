@@ -35,3 +35,17 @@ One-File Docs uses STB sprintf which is also placed under the MIT license.
 ### Bug reports and feature requests
 
 Feel free to post an issue if there is anything you would like to see implemented or if you encounter problems.
+
+### Markdown support:
+- Headers
+- Emphasis
+- Strike-through
+- Horizontal rules
+- Links (auto-linking works, you can also embed images inside links)
+- Images (additional options are available for width, height and rounding)
+- Ordered and unordered lists
+- Todo-lists
+- Tables
+- Quotes (cannot be nested at the moment)
+- Code blocks (including the ones with syntax highlighting)
+- Embedded HTML
