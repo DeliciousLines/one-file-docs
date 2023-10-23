@@ -754,7 +754,11 @@ int main(int num_arguments, char** arguments)
         
         ofd_b8 status = ofd_generate_documentation(ofd_cast(md_files.data, char**), md_files.count, html_filepath, theme_filepath, logo_path, icon_path, title);
         if(status) printf("Successfully generated '%s'.\n", html_filepath);
-        else       printf("Failed to generate '%s'.\n", html_filepath);
+        else
+        {
+            printf("Failed to generate '%s'.\n", html_filepath);
+            return -1;
+        }
     }
     else
     {

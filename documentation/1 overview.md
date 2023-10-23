@@ -140,7 +140,7 @@ One-File Docs supports most Markdown features and has a few of its own. Some fea
 
 ## Supported features
 
-The following only lists notable features.
+**The following only lists notable features.**
 
 ### Escaping characters
 
@@ -249,9 +249,6 @@ This feature is very unlikely to be added in the future.
 
 ### Nested notes
 If enough people show interest in this it will be added in the future but right now this is not supported and there are no plans to support it.
-
-### Nested lists
-Technically you can add nested lists but they will not appear the way they are supposed to. This will be added in the future.
 
 ### Ordered list
 You can still use the notation but the result is not styled in any specific way. This will be added in the future.

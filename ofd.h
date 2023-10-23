@@ -3192,101 +3192,104 @@ ofd_static void ofd_parse_markdown(char* c, char* limit, Ofd_Array* result_html,
             }
             case '+':
             {
-                if(c + 1 < limit && (c[1] == ' ' || c[1] == '\t'))
+                handle_a_list:;
+                
+                char* tmp_c = c - 1;
+                while(tmp_c >= lower_limit)
                 {
-                    handle_a_list:;
-                    // Check if this is in the middle of something else. START
-                    char* previous_c = c - 1;
-                    while(previous_c >= lower_limit)
-                    {
-                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        // NOTE: we check wether all characters up to the previous line end are whitespace. If that is not the case, we assume this is not
-                        // supposed to be a list item.
-                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        
-                        char character = *previous_c;
-                        if(character == ' ' || character == '\t')
-                        { // Skip whitespace.
-                            previous_c--;
-                            continue;
-                        }
-                        
-                        if(character == '\n' || character == '\r') break; // We only encountered whitespace so we assume this is a list item.
-                        
-                        goto do_the_default_thing; // This does not appear to be a list item.
-                    }
-                    // Check if this is in the middle of something else. END
+                    char character = *tmp_c;
+                    if(character == '\n' || character == '\r') break;
+                    if(character != ' ' && character != '\t') goto do_the_default_thing; // This does not appear to be a list.
                     
-                    
-                    OFD_SPILL_TEXT();
-                    
-                    ////////////////////////////////////////////////////////////////////////////////////////////////////////
-                    // NOTE: for now we only accept multi-line list items lines are aligned in the following way:
-                    // - List item line 1.
-                    //   List item line 2.
-                    //  List item line 3 but actually this line is not part of the list item as it is not correctly aligned.
-                    ////////////////////////////////////////////////////////////////////////////////////////////////////////
-                    
-                    // Get the end of this list item. START
-                    ofd_b8 changed_line = ofd_false;
-                    
-                    char* tmp_c = c;
-                    
-                    tmp_c += 2;
-                    while(tmp_c < limit)
-                    {
-                        switch(*tmp_c)
-                        {
-                            case '\n':
-                            {
-                                changed_line = ofd_true;
-                                tmp_c++;
-                                if(tmp_c < limit && *tmp_c == '\r') c++;
-                                
-                                int whitespace_count = 0;
-                                while(tmp_c < limit)
-                                {
-                                    if(*tmp_c != ' ' && *tmp_c != '\t') break;
-                                    whitespace_count++;
-                                    tmp_c++;
-                                }
-                                
-                                if(whitespace_count != 2)
-                                {
-                                    tmp_c -= whitespace_count;
-                                    goto found_end_of_item;
-                                }
-                                
-                                changed_line = ofd_false;
-                            } break;
-                            
-                            case '*':
-                            case '-':
-                            case '+':
-                            {
-                                if(changed_line && tmp_c + 1 < limit && (tmp_c[1] == ' ' || tmp_c[1] == '\t')) goto found_end_of_item;
-                                
-                                tmp_c++;
-                            } break;
-                            
-                            default: tmp_c++;
-                        }
-                    }
-                    
-                    found_end_of_item:;
-                    char* end_of_item = tmp_c;
-                    
-                    ofd_array_add_string(result_html, Ofd_String_("<div class='ofd-list-item'>"));
-                    ofd_parse_markdown(c + 2, end_of_item, result_html, result_sections, link_references, next_section_id, log_data);
-                    ofd_array_add_string(result_html, Ofd_String_("</div>"));
-                    
-                    c = end_of_item;
-                    // Get the end of this list item. END
-                    
-                    break;
+                    tmp_c--;
                 }
                 
-                goto do_the_default_thing;
+                tmp_c++;
+                
+                // Handle an unordered list. START
+                Ofd_Array whitespaces;
+                ofd_array_init(&whitespaces, sizeof(Ofd_String));
+                
+                Ofd_String* current_whitespace = ofd_array_add_fast(&whitespaces);
+                current_whitespace->data  = tmp_c;
+                current_whitespace->count = c - tmp_c;
+                
+                OFD_SPILL_TEXT();
+                
+                char list_indicator = *c;
+                
+                ofd_array_add_string(result_html, Ofd_String_("<ul>"));
+                
+                while(c < limit)
+                {
+                    c = ofd_skip_whitespace(c + 1, limit); // Skip '-'.
+                    
+                    Ofd_String text = {c};
+                    while(c < limit)
+                    {
+                        if(*c == '\n' || *c == '\r') break;
+                        c++;
+                    }
+                    
+                    text.count = c - text.data;
+                    
+                    
+                    ofd_array_add_string(result_html, Ofd_String_("<li>"));
+                    ofd_array_add_string(result_html, text);
+                    ofd_array_add_string(result_html, Ofd_String_("</li>"));
+                    
+                    if(c == limit) break;
+                    
+                    if(*c == '\n')
+                    {
+                        c++;
+                        if(c < limit && *c == '\r') c++;
+                    }
+                    else if(*c == '\r') c++;
+                    
+                    if(c < limit)
+                    {
+                        char* line_end;
+                        tmp_c = ofd_get_next_character_like_in_line(c, limit, list_indicator, &line_end);
+                        if(!tmp_c) break; // The list seems to stop here.
+                        
+                        Ofd_String leading_whitespace = {c, tmp_c - c};
+                        
+                        if(leading_whitespace.count == current_whitespace->count)
+                        {
+                            c = tmp_c;
+                            continue; // Parse the next list item.
+                        }
+                        if(leading_whitespace.count > current_whitespace->count)
+                        { // This is a nested list.
+                            ofd_array_add_string(result_html, Ofd_String_("<ul>"));
+                            
+                            current_whitespace = ofd_array_add_fast(&whitespaces);
+                            *current_whitespace = leading_whitespace;
+                            
+                            c = tmp_c;
+                            continue; // Parse the next list item.
+                        }
+                        if(leading_whitespace.count < current_whitespace->count)
+                        { // This is the end of a nested list or the end of the whole list.
+                            if(whitespaces.count > 1)
+                            { // This is the end of a nested list.
+                                ofd_array_add_string(result_html, Ofd_String_("</ul>"));
+                                
+                                whitespaces.count--;
+                                current_whitespace = ofd_cast(whitespaces.data, Ofd_String*) + whitespaces.count - 1;
+                                
+                                c = tmp_c;
+                                continue; // Parse the next list item.
+                            }
+                            else break; // This is the end of the list.
+                        }
+                    }
+                }
+                
+                for(int i = 0; i < whitespaces.count; i++) ofd_array_add_string(result_html, Ofd_String_("</ul>"));
+                ofd_free_array(&whitespaces);
+                // Handle an unordered list. END
             } break;
             
             
