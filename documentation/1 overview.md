@@ -233,6 +233,25 @@ List of supported language IDs:
 > **NOTE**
 > You can customise syntax colours by setting the `syntax_*` fields in your [theme file](#Themes).
 
+### Todo-lists
+
+You can display a todo-list in the following way:
+
+``
+- [x] Item 1
+- [x] Item 2
+- [x] Item 3
+- [ ] Item 4
+- [ ] Item 5
+``
+
+The code above gives the following result:
+- [x] Item 1
+- [x] Item 2
+- [x] Item 3
+- [ ] Item 4
+- [ ] Item 5
+
 ## Unsupported features
 
 > **NOTE**
@@ -249,15 +268,6 @@ This feature is very unlikely to be added in the future.
 
 ### Nested notes
 If enough people show interest in this it will be added in the future but right now this is not supported and there are no plans to support it.
-
-### Todo-lists
-Todo-lists will probably be added in the future. For now the following has no effect:
-
-``
-- [x] Something
-- [ ] Something else
-- [ ] Something else entirely
-``
 
 # How to build
 

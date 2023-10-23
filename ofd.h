@@ -3230,6 +3230,26 @@ ofd_static void ofd_parse_markdown(char* c, char* limit, Ofd_Array* result_html,
                 {
                     c = ofd_skip_whitespace(c + 1, limit); // Skip '-'.
                     
+                    ofd_array_add_string(result_html, Ofd_String_("<li>"));
+                    
+                    if(*c == '[' && c + 3 <= limit)
+                    { // Maybe handle a todo item.
+                        if(ofd_memcmp(c, "[ ]", 3) == 0)
+                        {
+                            c += 3;
+                            c = ofd_skip_whitespace(c, limit);
+                            
+                            ofd_array_add_string(result_html, Ofd_String_("<span class='ofd-todo ofd-unchecked-todo'></span>"));
+                        }
+                        else if(ofd_memcmp(c, "[x]", 3) == 0)
+                        {
+                            c += 3;
+                            c = ofd_skip_whitespace(c, limit);
+                            
+                            ofd_array_add_string(result_html, Ofd_String_("<span class='ofd-todo ofd-checked-todo'></span>"));
+                        }
+                    }
+                    
                     Ofd_String text = {c};
                     while(c < limit)
                     {
@@ -3240,7 +3260,6 @@ ofd_static void ofd_parse_markdown(char* c, char* limit, Ofd_Array* result_html,
                     text.count = c - text.data;
                     
                     
-                    ofd_array_add_string(result_html, Ofd_String_("<li>"));
                     ofd_parse_markdown(text.data, text.data + text.count, result_html, result_sections, link_references, next_section_id, log_data);
                     ofd_array_add_string(result_html, Ofd_String_("</li>"));
                     
@@ -4601,6 +4620,59 @@ ofd_static void ofd_generate_documentation_from_memory(Ofd_String* markdown_file
     
     ofd_array_add_string(&html, Ofd_String_(buffer));
     // Generate quote style. END
+    
+    
+    // Generate todo-list styles. START
+    ofd_colour_to_string(theme.background_colour, colour_string);
+    ofd_colour_to_string(theme.text_colour,       colour_string2);
+    
+    ofd_sprintf(buffer,
+        ".ofd-todo {"
+            "display: inline-block;"
+            "margin-right: 0.5em;"
+            "width:  1em;"
+            "height: 1em;"
+            "border-radius: 0.1em;"
+        "}"
+        
+        ".ofd-checked-todo {"
+            "background-color: %s;"
+        "}"
+        
+        ".ofd-checked-todo:after {"
+            "display: block;"
+            "position: relative;"
+            "top: 0;"
+            "left: 0;"
+            "width:  30%%;"
+            "height: 60%%;"
+            "top: 40%%;"
+            "left: 50%%;"
+            "border-width: 0;"
+            "border-bottom-width: 0.2em;"
+            "border-right-width: 0.2em;"
+            "border-color: %s;"
+            "border-style: solid;"
+            "content: '';"
+            
+            "transform-origin: center;"
+            "-webkit-transform-origin: center;"
+            
+            "transform: translate(-50%%, -50%%) rotate(45deg);"
+            "-webkit-transform: translate(-50%%, -50%%) rotate(45deg);"
+        "}"
+        
+        ".ofd-unchecked-todo {"
+            "background-color: %s;"
+        "}"
+        ,
+        colour_string2,
+        colour_string,
+        colour_string2
+    );
+    
+    ofd_array_add_string(&html, Ofd_String_(buffer));
+    // Generate todo-list styles. END
     
     
     // Generate section link styles. START
