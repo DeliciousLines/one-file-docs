@@ -3235,7 +3235,7 @@ ofd_static void ofd_parse_markdown(char* c, char* limit, Ofd_Array* result_html,
                     
                     
                     ofd_array_add_string(result_html, Ofd_String_("<li>"));
-                    ofd_array_add_string(result_html, text);
+                    ofd_parse_markdown(text.data, text.data + text.count, result_html, result_sections, link_references, next_section_id, log_data);
                     ofd_array_add_string(result_html, Ofd_String_("</li>"));
                     
                     if(c == limit) break;
@@ -3687,6 +3687,7 @@ ofd_static void ofd_parse_markdown(char* c, char* limit, Ofd_Array* result_html,
             default:
             {
                 do_the_default_thing:;
+                
                 
                 if(!basic_text.count) basic_text.data = c;
                 
